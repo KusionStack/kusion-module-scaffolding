@@ -1,4 +1,4 @@
-module kusion-modules
+module kawsome
 
 go 1.22
 

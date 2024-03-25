@@ -1,8 +1,8 @@
 # The configuration codes in perspective of developers. 
-import kam.models.schema.v1 as ac
-import kam.models.schema.v1.workload as wl
-import kam.models.schema.v1.workload.container as c
-import kawesome.kawesome_schema as ks
+import kam.v1.app_configuration as ac
+import kam.v1.workload as wl
+import kam.v1.workload.container as c
+import kawesome.kawesome as ks
 
 kawesome: ac.AppConfiguration {
     # Declare the workload configurations. 

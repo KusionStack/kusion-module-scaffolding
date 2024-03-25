@@ -3,6 +3,6 @@
 
 This template repository is intended as a starting point for creating a Kusion Module, containing: 
 
-- An example Kusion Module **kawesome** (`kawesome/`) with both schema definition and generator implementation. It will generate a Kubernetes `Service` and a Terraform `random_password` resource. 
+- An example Kusion Module **kawesome** (`kawesome/v1`) with both schema definition and generator implementation. It will generate a Kubernetes `Service` and a Terraform `random_password` resource. 
 
-- An example application (`kawesome-example/`) with both developer configuration codes and platform workspace configurations using the kawesome module. 
+- An example application (`kawesome/example`) with both developer configuration codes and platform workspace configurations using the kawesome module. 

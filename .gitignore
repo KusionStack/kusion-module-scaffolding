@@ -19,3 +19,7 @@
 
 # Go workspace file
 go.work
+
+# KCL & KPM cache file
+.kclvm
+*.mod.lock

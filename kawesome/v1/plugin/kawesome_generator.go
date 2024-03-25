@@ -1,4 +1,4 @@
-package module
+package main
 
 import (
 	"context"
@@ -11,10 +11,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"kusionstack.io/kusion-module-framework/pkg/module"
+	"kusionstack.io/kusion-module-framework/pkg/server"
 	apiv1 "kusionstack.io/kusion/pkg/apis/core/v1"
 	"kusionstack.io/kusion/pkg/log"
 	"kusionstack.io/kusion/pkg/modules"
 )
+
+func main() {
+	server.Start(&Kawesome{})
+}
 
 // Kawesome implements the Kusion Module generator interface.
 type Kawesome struct {

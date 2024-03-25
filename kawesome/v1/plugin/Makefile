@@ -1,7 +1,7 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
 ###### chang variables below according to your own modules ###
 NAMESPACE=kusionstack
-NAME=example-network
+NAME=kawesome
 VERSION=v0.1.0
 BINARY=../bin/kusion-module-${NAME}_${VERSION}
 
@@ -20,7 +20,7 @@ build-darwin:
 	GOOS=darwin GOARCH=arm64 go build -o ${BINARY} ./${NAME}
 
 install: build-darwin
-# copy module binary to $KUSION_HOME. e.g. ~/.kusion/modules/kusionstack/opsrule/v0.1.0/darwin/arm64/kusion-module-opsrule_v0.1.0
+# copy module binary to $KUSION_HOME. e.g. ~/.kusion/modules/kusionstack/kawesome/v0.1.0/darwin/arm64/kusion-module-kawesome_v0.1.0
 	mkdir -p ${KUSION_HOME}/modules/${NAMESPACE}/${NAME}/${VERSION}/${GOOS_LOCAL}/${OS_ARCH}
 	cp ${BINARY} ${KUSION_HOME}/modules/${NAMESPACE}/${NAME}/${VERSION}/${GOOS_LOCAL}/${OS_ARCH}
 

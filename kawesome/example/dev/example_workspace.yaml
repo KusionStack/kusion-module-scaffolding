@@ -1,0 +1,9 @@
+# The configuration items in perspective of platform engineers. 
+modules: 
+  kusionstack/kawesome@v0.1.0: 
+    default: 
+      service: 
+        labels: 
+          kusionstack.io/module-name: kawesome
+        annotations: 
+          kusionstack.io/module-version: 0.1.0

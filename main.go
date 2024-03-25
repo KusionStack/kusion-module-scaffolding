@@ -1,11 +1,11 @@
-package kusion_module_scaffolding
+package main
 
 import (
-	"kusionstack.io/kusion-module-framework/pkg/server"
+	module "kusion-modules/kawesome"
 
-	"kusion-modules/module"
+	"kusionstack.io/kusion-module-framework/pkg/server"
 )
 
 func main() {
-	server.Start(&module.ExampleNetworkModule{})
+	server.Start(&module.Kawesome{})
 }

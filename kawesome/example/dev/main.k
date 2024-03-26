@@ -18,7 +18,7 @@ kawesome: ac.AppConfiguration {
     }
     # Declare the kawesome module configurations. 
     accessories: {
-        "kusionstack/kawesome@v0.1.0": ks.Kawesome {
+        "kawesome": ks.Kawesome {
             service: ks.Service{
                 port: 5678
             }

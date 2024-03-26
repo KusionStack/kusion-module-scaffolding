@@ -1,6 +1,6 @@
 # The configuration items in perspective of platform engineers. 
 modules: 
-  kusionstack/kawesome@v0.1.0: 
+  kusionstack/kawesome@0.1.0: 
     default: 
       service: 
         labels: 

@@ -2,7 +2,7 @@ TEST?=$$(go list ./... | grep -v 'vendor')
 ###### chang variables below according to your own modules ###
 NAMESPACE=kusionstack
 NAME=kawesome
-VERSION=v0.1.0
+VERSION=0.1.0
 BINARY=../bin/kusion-module-${NAME}_${VERSION}
 
 LOCAL_ARCH := $(shell uname -m)
@@ -20,9 +20,17 @@ build-darwin:
 	GOOS=darwin GOARCH=arm64 go build -o ${BINARY} ./${NAME}
 
 install: build-darwin
-# copy module binary to $KUSION_HOME. e.g. ~/.kusion/modules/kusionstack/kawesome/v0.1.0/darwin/arm64/kusion-module-kawesome_v0.1.0
+# copy module binary to $KUSION_HOME. e.g. ~/.kusion/modules/kusionstack/kawesome/v0.1.0/darwin/arm64/kusion-module-kawesome_0.1.0
 	mkdir -p ${KUSION_HOME}/modules/${NAMESPACE}/${NAME}/${VERSION}/${GOOS_LOCAL}/${OS_ARCH}
 	cp ${BINARY} ${KUSION_HOME}/modules/${NAMESPACE}/${NAME}/${VERSION}/${GOOS_LOCAL}/${OS_ARCH}
+
+release: 
+	GOOS=darwin GOARCH=arm64 go build -o ${BINARY}_darwin_arm64 ./${NAME}
+	GOOS=darwin GOARCH=amd64 go build -o ${BINARY}_darwin_amd64 ./${NAME}
+	GOOS=linux GOARCH=arm64 go build -o ${BINARY}_linux_arm64 ./${NAME}
+	GOOS=linux GOARCH=amd64 go build -o ${BINARY}_linux_amd64 ./${NAME}
+	GOOS=windows GOARCH=amd64 go build -o ${BINARY}_windows_amd64 ./${NAME}
+	GOOS=windows GOARCH=386 go build -o ${BINARY}_windows_386 ./${NAME}
 
 test:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 5m

@@ -17,7 +17,7 @@ export OS_ARCH ?= $(GOARCH_LOCAL)
 default: install
 
 build-darwin:
-	GOOS=darwin GOARCH=arm64 go build -o ${BINARY} ./${NAME}
+	GOOS=darwin GOARCH=arm64 go build -o ${BINARY} .
 
 install: build-darwin
 # copy module binary to $KUSION_HOME. e.g. ~/.kusion/modules/kusionstack/kawesome/v0.1.0/darwin/arm64/kusion-module-kawesome_0.1.0

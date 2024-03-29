@@ -2,7 +2,7 @@
 import kam.v1.app_configuration as ac
 import kam.v1.workload as wl
 import kam.v1.workload.container as c
-import kawesome.kawesome as ks
+import kawesome.v1.kawesome as ks
 
 kawesome: ac.AppConfiguration {
     # Declare the workload configurations. 

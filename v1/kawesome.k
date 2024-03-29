@@ -11,7 +11,7 @@ schema Kawesome:
     
     Examples
     --------
-    import kawesome as ks
+    import kawesome.v1.kawesome as ks
 
     accessories: {
         "kusionstack/kawesome@v0.1.0": ks.Kawesome {

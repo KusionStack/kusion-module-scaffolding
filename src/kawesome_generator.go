@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"kusionstack.io/kusion-module-framework/pkg/module"
 	"kusionstack.io/kusion-module-framework/pkg/server"
-	apiv1 "kusionstack.io/kusion/pkg/apis/core/v1"
+	kusionv1 "kusionstack.io/kusion/pkg/apis/api.kusion.io/v1"
 	"kusionstack.io/kusion/pkg/log"
 	"kusionstack.io/kusion/pkg/modules"
 )
@@ -62,7 +62,7 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 	}()
 
 	// Kawesome module does not exist in AppConfiguration configs.
-	if request.DevModuleConfig == nil {
+	if request.DevConfig == nil {
 		log.Info("Kawesome module does not exist in AppConfiguration configs")
 	}
 
@@ -72,7 +72,7 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 	}
 
 	// Get the complete kawesome module configs.
-	if err := k.CompleteConfig(request.DevModuleConfig, request.PlatformModuleConfig); err != nil {
+	if err := k.CompleteConfig(request.DevConfig, request.PlatformConfig); err != nil {
 		log.Debugf("failed to get complete kawesome module configs: %v", err)
 		return nil, err
 	}
@@ -83,8 +83,7 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 		return nil, err
 	}
 
-	var resources []apiv1.Resource
-	var patchers []apiv1.Patcher
+	var resources []kusionv1.Resource
 
 	// Generate the Kubernetes Service related resource.
 	resource, err := k.GenerateServiceResource(request)
@@ -99,17 +98,16 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 		return nil, err
 	}
 	resources = append(resources, *resource)
-	patchers = append(patchers, *patcher)
 
 	// Return the Kusion generator response.
 	return &module.GeneratorResponse{
 		Resources: resources,
-		Patchers:  patchers,
+		Patcher:   patcher,
 	}, nil
 }
 
-// CompleteConfig completes the kawesome module configs with both devModuleConfig and platformModuleConfig.
-func (k *Kawesome) CompleteConfig(devConfig apiv1.Accessory, platformConfig apiv1.GenericConfig) error {
+// CompleteConfig completes the kawesome module configs with both DevConfig and platformModuleConfig.
+func (k *Kawesome) CompleteConfig(devConfig kusionv1.Accessory, platformConfig kusionv1.GenericConfig) error {
 	if devConfig != nil {
 		devCfgYamlStr, err := yaml.Marshal(devConfig)
 		if err != nil {
@@ -125,7 +123,6 @@ func (k *Kawesome) CompleteConfig(devConfig apiv1.Accessory, platformConfig apiv
 		k.Service.TargetPort = k.Service.Port
 	}
 
-	// var serviceConfig apiv1.GenericConfig
 	if platformConfig != nil {
 		platformCfgYamlStr, err := yaml.Marshal(platformConfig)
 		if err != nil {
@@ -164,7 +161,7 @@ func (k *Kawesome) ValidateConfig() error {
 // GenerateServiceResource generates the Kubernetes Service related to the kawesome module service.
 // Note that we will use the SDK provided by the kusion module framework to wrap the Kubernetes resource
 // into Kusion resource.
-func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*apiv1.Resource, error) {
+func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*kusionv1.Resource, error) {
 	// Generate the unique application name with project, stack and app name.
 	appUniqueName := modules.UniqueAppName(request.Project, request.Stack, request.App)
 	svcType := v1.ServiceTypeClusterIP
@@ -226,9 +223,9 @@ func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*a
 // GenerateRandomPasswordResource generates the Terraform random_password related to the kawesome module randomPassword.
 // Note that we will use the SDK provided by the kusion module framework to wrap the Terraform resource
 // into Kusion resource.
-func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorRequest) (*apiv1.Resource, *apiv1.Patcher, error) {
+func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorRequest) (*kusionv1.Resource, *kusionv1.Patcher, error) {
 	// Set the random_password provider config.
-	randomPasswordPvdCfg := apiv1.ProviderConfig{
+	randomPasswordPvdCfg := module.ProviderConfig{
 		Source:  "hashicorp/random",
 		Version: "3.6.0",
 	}
@@ -267,7 +264,7 @@ func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorReque
 			Value: modules.KusionPathDependency(resourceID, "result"),
 		},
 	}
-	patcher := &apiv1.Patcher{
+	patcher := &kusionv1.Patcher{
 		Environments: envVars,
 	}
 

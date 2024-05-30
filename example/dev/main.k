@@ -1,12 +1,12 @@
 # The configuration codes in perspective of developers. 
 import kam.v1.app_configuration as ac
-import kam.v1.workload as wl
-import kam.v1.workload.container as c
+import service as svc
+import service.container as c
 import kawesome.v1.kawesome as ks
 
 kawesome: ac.AppConfiguration {
     # Declare the workload configurations. 
-    workload: wl.Service {
+    workload: svc.Service {
         containers: {
             kawesome: c.Container {
                 image: "hashicorp/http-echo"

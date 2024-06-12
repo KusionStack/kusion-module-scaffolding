@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"kusionstack.io/kusion-module-framework/pkg/module"
 	"kusionstack.io/kusion-module-framework/pkg/server"
-	apiv1 "kusionstack.io/kusion/pkg/apis/core/v1"
+	apiv1 "kusionstack.io/kusion/pkg/apis/api.kusion.io/v1"
 	"kusionstack.io/kusion/pkg/log"
 	"kusionstack.io/kusion/pkg/modules"
 )
@@ -22,6 +22,13 @@ func main() {
 }
 
 // Kawesome implements the Kusion Module generator interface.
+//
+// Note that as an example of a Kusion Module, Kawesome consists of two components, one of which
+// is a 'Service', which is used to generate a Kubernetes Service resource, and the other is a
+// 'RandomePassword', which is used to generate a Terraform random_password resource.
+//
+// Typically, these two resources are not particularly related, but here they are combined to primarily
+// illustrate how to develop a Kusion Module.
 type Kawesome struct {
 	// Service is for service configs of kawesome module.
 	Service Service `yaml:"service,omitempty" json:"service,omitempty"`
@@ -62,7 +69,7 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 	}()
 
 	// Kawesome module does not exist in AppConfiguration configs.
-	if request.DevModuleConfig == nil {
+	if request.DevConfig == nil {
 		log.Info("Kawesome module does not exist in AppConfiguration configs")
 	}
 
@@ -72,7 +79,7 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 	}
 
 	// Get the complete kawesome module configs.
-	if err := k.CompleteConfig(request.DevModuleConfig, request.PlatformModuleConfig); err != nil {
+	if err := k.CompleteConfig(request.DevConfig, request.PlatformConfig); err != nil {
 		log.Debugf("failed to get complete kawesome module configs: %v", err)
 		return nil, err
 	}
@@ -84,7 +91,7 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 	}
 
 	var resources []apiv1.Resource
-	var patchers []apiv1.Patcher
+	var patcher *apiv1.Patcher
 
 	// Generate the Kubernetes Service related resource.
 	resource, err := k.GenerateServiceResource(request)
@@ -94,22 +101,22 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 	resources = append(resources, *resource)
 
 	// Generate the Terraform random_password related resource and patcher.
-	resource, patcher, err := k.GenerateRandomPasswordResource(request)
+	resource, patcher, err = k.GenerateRandomPasswordResource(request)
 	if err != nil {
 		return nil, err
 	}
 	resources = append(resources, *resource)
-	patchers = append(patchers, *patcher)
 
 	// Return the Kusion generator response.
 	return &module.GeneratorResponse{
 		Resources: resources,
-		Patchers:  patchers,
+		Patcher:   patcher,
 	}, nil
 }
 
 // CompleteConfig completes the kawesome module configs with both devModuleConfig and platformModuleConfig.
 func (k *Kawesome) CompleteConfig(devConfig apiv1.Accessory, platformConfig apiv1.GenericConfig) error {
+	// Retrieve the config items the developers are concerned about.
 	if devConfig != nil {
 		devCfgYamlStr, err := yaml.Marshal(devConfig)
 		if err != nil {
@@ -125,7 +132,7 @@ func (k *Kawesome) CompleteConfig(devConfig apiv1.Accessory, platformConfig apiv
 		k.Service.TargetPort = k.Service.Port
 	}
 
-	// var serviceConfig apiv1.GenericConfig
+	// Retrieve the config items the platform engineers care about.
 	if platformConfig != nil {
 		platformCfgYamlStr, err := yaml.Marshal(platformConfig)
 		if err != nil {
@@ -162,6 +169,7 @@ func (k *Kawesome) ValidateConfig() error {
 }
 
 // GenerateServiceResource generates the Kubernetes Service related to the kawesome module service.
+//
 // Note that we will use the SDK provided by the kusion module framework to wrap the Kubernetes resource
 // into Kusion resource.
 func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*apiv1.Resource, error) {
@@ -172,7 +180,6 @@ func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*a
 	// Generate the selector for the Service workload with the unique app labels SDK
 	// provided by Kusion.
 	selector := modules.UniqueAppLabels(request.Project, request.App)
-
 	svc := &v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
@@ -224,11 +231,12 @@ func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*a
 }
 
 // GenerateRandomPasswordResource generates the Terraform random_password related to the kawesome module randomPassword.
+//
 // Note that we will use the SDK provided by the kusion module framework to wrap the Terraform resource
 // into Kusion resource.
 func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorRequest) (*apiv1.Resource, *apiv1.Patcher, error) {
 	// Set the random_password provider config.
-	randomPasswordPvdCfg := apiv1.ProviderConfig{
+	randomPasswordPvdCfg := module.ProviderConfig{
 		Source:  "hashicorp/random",
 		Version: "3.6.0",
 	}
@@ -248,12 +256,8 @@ func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorReque
 		return nil, nil, err
 	}
 
-	resourceExts, err := module.TerraformProviderExtensions(randomPasswordPvdCfg, nil, "random_password")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	resource, err := module.WrapTFResourceToKusionResource(resourceID, attrs, resourceExts, nil)
+	// Wrap the Terraform resource to Kusion resource in Spec.
+	resource, err := module.WrapTFResourceToKusionResource(randomPasswordPvdCfg, "random_password", resourceID, attrs, nil)
 	if err != nil {
 		return nil, nil, err
 	}

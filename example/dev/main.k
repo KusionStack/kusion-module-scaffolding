@@ -1,12 +1,12 @@
 # The configuration codes in perspective of developers. 
 import kam.v1.app_configuration as ac
-import kam.v1.workload as wl
-import kam.v1.workload.container as c
-import kawesome.v1.kawesome as ks
+import service
+import service.container as c
+import kawesome.v1.kawesome
 
 kawesome: ac.AppConfiguration {
     # Declare the workload configurations. 
-    workload: wl.Service {
+    workload: service.Service {
         containers: {
             kawesome: c.Container {
                 image: "hashicorp/http-echo"
@@ -15,14 +15,15 @@ kawesome: ac.AppConfiguration {
                 }
             }
         }
+        replicas: 1
     }
     # Declare the kawesome module configurations. 
     accessories: {
-        "kawesome": ks.Kawesome {
-            service: ks.Service{
+        "kawesome": kawesome.Kawesome {
+            service: kawesome.Service{
                 port: 5678
             }
-            randomPassword: ks.RandomPassword {
+            randomPassword: kawesome.RandomPassword {
                 length: 20
             }
         }

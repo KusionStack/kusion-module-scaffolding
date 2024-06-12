@@ -1,9 +1,12 @@
 # The configuration items in perspective of platform engineers. 
 modules: 
-  kusionstack/kawesome@0.1.0: 
-    default: 
-      service: 
-        labels: 
-          kusionstack.io/module-name: kawesome
-        annotations: 
-          kusionstack.io/module-version: 0.1.0
+  kawesome: 
+    path: oci://ghcr.io/kusionstack/kawesome
+    version: 0.2.0
+    configs: 
+      default: 
+        service: 
+          labels: 
+            kusionstack.io/module-name: kawesome
+          annotations: 
+            kusionstack.io/module-version: 0.2.0

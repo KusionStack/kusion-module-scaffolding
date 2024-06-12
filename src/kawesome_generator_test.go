@@ -7,8 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	"kusionstack.io/kusion-module-framework/pkg/module"
-	apiv1 "kusionstack.io/kusion/pkg/apis/core/v1"
-	"kusionstack.io/kusion/pkg/apis/core/v1/workload"
+	apiv1 "kusionstack.io/kusion/pkg/apis/api.kusion.io/v1"
 )
 
 func TestKawesomeModule_Generate(t *testing.T) {
@@ -29,13 +28,13 @@ func TestKawesomeModule_Generate(t *testing.T) {
 					Project: "kawesome-example",
 					Stack:   "dev",
 					App:     "kawesome",
-					Workload: &workload.Workload{
-						Header: workload.Header{
+					Workload: &apiv1.Workload{
+						Header: apiv1.Header{
 							Type: "Job",
 						},
-						Job: &workload.Job{},
+						Job: &apiv1.Job{},
 					},
-					DevModuleConfig: apiv1.Accessory{
+					DevConfig: apiv1.Accessory{
 						"service": apiv1.Accessory{
 							"port":       80,
 							"targetPort": 8080,
@@ -57,13 +56,13 @@ func TestKawesomeModule_Generate(t *testing.T) {
 					Project: "kawesome-example",
 					Stack:   "dev",
 					App:     "kawesome",
-					Workload: &workload.Workload{
-						Header: workload.Header{
+					Workload: &apiv1.Workload{
+						Header: apiv1.Header{
 							Type: "Service",
 						},
-						Service: &workload.Service{},
+						Service: &apiv1.Service{},
 					},
-					DevModuleConfig: apiv1.Accessory{
+					DevConfig: apiv1.Accessory{
 						"service": apiv1.Accessory{
 							"port": 0,
 						},
@@ -80,13 +79,13 @@ func TestKawesomeModule_Generate(t *testing.T) {
 					Project: "kawesome-example",
 					Stack:   "dev",
 					App:     "kawesome",
-					Workload: &workload.Workload{
-						Header: workload.Header{
+					Workload: &apiv1.Workload{
+						Header: apiv1.Header{
 							Type: "Service",
 						},
-						Service: &workload.Service{},
+						Service: &apiv1.Service{},
 					},
-					DevModuleConfig: apiv1.Accessory{
+					DevConfig: apiv1.Accessory{
 						"service": apiv1.Accessory{
 							"port":       80,
 							"targetPort": 0,
@@ -104,13 +103,13 @@ func TestKawesomeModule_Generate(t *testing.T) {
 					Project: "kawesome-example",
 					Stack:   "dev",
 					App:     "kawesome",
-					Workload: &workload.Workload{
-						Header: workload.Header{
+					Workload: &apiv1.Workload{
+						Header: apiv1.Header{
 							Type: "Service",
 						},
-						Service: &workload.Service{},
+						Service: &apiv1.Service{},
 					},
-					DevModuleConfig: apiv1.Accessory{
+					DevConfig: apiv1.Accessory{
 						"service": apiv1.Accessory{
 							"port":       80,
 							"targetPort": 8080,
@@ -129,13 +128,13 @@ func TestKawesomeModule_Generate(t *testing.T) {
 					Project: "kawesome-example",
 					Stack:   "dev",
 					App:     "kawesome",
-					Workload: &workload.Workload{
-						Header: workload.Header{
+					Workload: &apiv1.Workload{
+						Header: apiv1.Header{
 							Type: "Service",
 						},
-						Service: &workload.Service{},
+						Service: &apiv1.Service{},
 					},
-					DevModuleConfig: apiv1.Accessory{
+					DevConfig: apiv1.Accessory{
 						"service": apiv1.Accessory{
 							"port":       80,
 							"targetPort": 8080,
@@ -157,13 +156,13 @@ func TestKawesomeModule_Generate(t *testing.T) {
 					Project: "kawesome-example",
 					Stack:   "dev",
 					App:     "kawesome",
-					Workload: &workload.Workload{
-						Header: workload.Header{
+					Workload: &apiv1.Workload{
+						Header: apiv1.Header{
 							Type: "Service",
 						},
-						Service: &workload.Service{},
+						Service: &apiv1.Service{},
 					},
-					DevModuleConfig: apiv1.Accessory{
+					DevConfig: apiv1.Accessory{
 						"service": apiv1.Accessory{
 							"port":       80,
 							"targetPort": 8080,
@@ -173,7 +172,7 @@ func TestKawesomeModule_Generate(t *testing.T) {
 							"length": 10,
 						},
 					},
-					PlatformModuleConfig: apiv1.GenericConfig{
+					PlatformConfig: apiv1.GenericConfig{
 						"service": apiv1.GenericConfig{
 							"labels": apiv1.GenericConfig{
 								"kusionstack.io/module-name": "kawesome",
@@ -238,18 +237,16 @@ func TestKawesomeModule_Generate(t *testing.T) {
 						},
 						Extensions: map[string]interface{}{
 							"provider":     "registry.terraform.io/hashicorp/random/3.6.0",
-							"providerMeta": map[string]interface{}(nil),
+							"providerMeta": apiv1.GenericConfig(nil),
 							"resourceType": "random_password",
 						},
 					},
 				},
-				Patchers: []apiv1.Patcher{
-					{
-						Environments: []v1.EnvVar{
-							{
-								Name:  "KUSION_KAWESOME_RANDOM_PASSWORD",
-								Value: "$kusion_path.hashicorp:random:random_password:kawesome-example-dev-kawesome.result",
-							},
+				Patcher: &apiv1.Patcher{
+					Environments: []v1.EnvVar{
+						{
+							Name:  "KUSION_KAWESOME_RANDOM_PASSWORD",
+							Value: "$kusion_path.hashicorp:random:random_password:kawesome-example-dev-kawesome.result",
 						},
 					},
 				},

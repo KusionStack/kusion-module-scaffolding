@@ -1,4 +1,6 @@
 # Kusion Module Scaffolding
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKusionStack%2Fkusion-module-scaffolding.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKusionStack%2Fkusion-module-scaffolding?ref=badge_shield)
+
 
 *This is a quick start template repository for developing a Kusion module, which is built on the [Kusion Module Framework](https://github.com/KusionStack/kusion-module-framework).*
 
@@ -111,3 +113,6 @@ To develop your own module, start with this scaffold and:
 - Modify the example in the `example` directory and `README.md` accordingly
 
 For a more through walkthrough including how to publish a module, please refer to the [Kusion Module Developer Guide](https://www.kusionstack.io/docs/kusion/concepts/kusion-module/develop-guide).
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKusionStack%2Fkusion-module-scaffolding.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKusionStack%2Fkusion-module-scaffolding?ref=badge_large)

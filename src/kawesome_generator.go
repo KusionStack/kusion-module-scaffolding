@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	kusionapiv1 "kusionstack.io/kusion-api-go/api.kusion.io/v1"
+	"kusionstack.io/kusion-module-framework/pkg/log"
 	"kusionstack.io/kusion-module-framework/pkg/module"
 	"kusionstack.io/kusion-module-framework/pkg/server"
-	apiv1 "kusionstack.io/kusion/pkg/apis/api.kusion.io/v1"
-	"kusionstack.io/kusion/pkg/log"
-	"kusionstack.io/kusion/pkg/modules"
 )
 
 func main() {
@@ -61,37 +62,48 @@ type RandomPassword struct {
 
 // Generate implements the generation logic of kawesome module, including a Kubernetes Service and
 // a Terraform random_password resource.
-func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest) (*module.GeneratorResponse, error) {
+func (k *Kawesome) Generate(ctx context.Context, request *module.GeneratorRequest) (response *module.GeneratorResponse, err error) {
+	// Get the module logger with the generator context.
+	logger := log.GetModuleLogger(ctx)
+	logger.Info("Generating resources...")
+
 	defer func() {
 		if r := recover(); r != nil {
-			log.Debugf("failed to generate kawesome module: %v", r)
+			logger.Debug("failed to generate kawesome module: %v", r)
+			response = nil
+			rawRequest, _ := json.Marshal(request)
+			err = fmt.Errorf("panic in kawesome module generator but recovered with error: [%v] and stack %v and request %v",
+				r, string(debug.Stack()), string(rawRequest))
 		}
 	}()
 
 	// Kawesome module does not exist in AppConfiguration configs.
 	if request.DevConfig == nil {
-		log.Info("Kawesome module does not exist in AppConfiguration configs")
+		logger.Info("Kawesome module does not exist in AppConfiguration configs")
 	}
 
 	// Port should be binded to a Service Workload.
-	if request.Workload.Service == nil {
+	if request.Workload == nil {
+		return nil, errors.New("empty workload")
+	} else if workloadType, ok := request.Workload["_type"]; !ok ||
+		!strings.Contains(workloadType.(string), ".Service") {
 		return nil, errors.New("port should be binded to a service workload")
 	}
 
 	// Get the complete kawesome module configs.
 	if err := k.CompleteConfig(request.DevConfig, request.PlatformConfig); err != nil {
-		log.Debugf("failed to get complete kawesome module configs: %v", err)
+		logger.Debug("failed to get complete kawesome module configs: %v", err)
 		return nil, err
 	}
 
 	// Validate the completed kawesome module configs.
 	if err := k.ValidateConfig(); err != nil {
-		log.Debugf("failed to validate the kawesome module configs: %v", err)
+		logger.Debug("failed to validate the kawesome module configs: %v", err)
 		return nil, err
 	}
 
-	var resources []apiv1.Resource
-	var patcher *apiv1.Patcher
+	var resources []kusionapiv1.Resource
+	var patcher *kusionapiv1.Patcher
 
 	// Generate the Kubernetes Service related resource.
 	resource, err := k.GenerateServiceResource(request)
@@ -115,7 +127,7 @@ func (k *Kawesome) Generate(_ context.Context, request *module.GeneratorRequest)
 }
 
 // CompleteConfig completes the kawesome module configs with both devModuleConfig and platformModuleConfig.
-func (k *Kawesome) CompleteConfig(devConfig apiv1.Accessory, platformConfig apiv1.GenericConfig) error {
+func (k *Kawesome) CompleteConfig(devConfig kusionapiv1.Accessory, platformConfig kusionapiv1.GenericConfig) error {
 	// Retrieve the config items the developers are concerned about.
 	if devConfig != nil {
 		devCfgYamlStr, err := yaml.Marshal(devConfig)
@@ -172,14 +184,14 @@ func (k *Kawesome) ValidateConfig() error {
 //
 // Note that we will use the SDK provided by the kusion module framework to wrap the Kubernetes resource
 // into Kusion resource.
-func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*apiv1.Resource, error) {
+func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*kusionapiv1.Resource, error) {
 	// Generate the unique application name with project, stack and app name.
-	appUniqueName := modules.UniqueAppName(request.Project, request.Stack, request.App)
+	appUniqueName := module.UniqueAppName(request.Project, request.Stack, request.App)
 	svcType := v1.ServiceTypeClusterIP
 
 	// Generate the selector for the Service workload with the unique app labels SDK
 	// provided by Kusion.
-	selector := modules.UniqueAppLabels(request.Project, request.App)
+	selector := module.UniqueAppLabels(request.Project, request.App)
 	svc := &v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
@@ -234,7 +246,7 @@ func (k *Kawesome) GenerateServiceResource(request *module.GeneratorRequest) (*a
 //
 // Note that we will use the SDK provided by the kusion module framework to wrap the Terraform resource
 // into Kusion resource.
-func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorRequest) (*apiv1.Resource, *apiv1.Patcher, error) {
+func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorRequest) (*kusionapiv1.Resource, *kusionapiv1.Patcher, error) {
 	// Set the random_password provider config.
 	randomPasswordPvdCfg := module.ProviderConfig{
 		Source:  "hashicorp/random",
@@ -250,7 +262,7 @@ func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorReque
 
 	// Generate Kusion resource ID & extentions and wrap the Terraform random_password into Kusion resource
 	// with the SDK provided by kusion module framework.
-	appUniqueName := modules.UniqueAppName(request.Project, request.Stack, request.App)
+	appUniqueName := module.UniqueAppName(request.Project, request.Stack, request.App)
 	resourceID, err := module.TerraformResourceID(randomPasswordPvdCfg, "random_password", appUniqueName)
 	if err != nil {
 		return nil, nil, err
@@ -268,10 +280,10 @@ func (k *Kawesome) GenerateRandomPasswordResource(request *module.GeneratorReque
 	envVars := []v1.EnvVar{
 		{
 			Name:  "KUSION_KAWESOME_RANDOM_PASSWORD",
-			Value: modules.KusionPathDependency(resourceID, "result"),
+			Value: module.KusionPathDependency(resourceID, "result"),
 		},
 	}
-	patcher := &apiv1.Patcher{
+	patcher := &kusionapiv1.Patcher{
 		Environments: envVars,
 	}
 

@@ -23,3 +23,6 @@ go.work
 # KCL & KPM cache file
 .kclvm
 *.mod.lock
+
+# Local binary files
+bin/

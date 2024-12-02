@@ -2,11 +2,11 @@
 modules: 
   kawesome: 
     path: oci://ghcr.io/kusionstack/kawesome
-    version: 0.2.0
+    version: 0.3.0
     configs: 
       default: 
         service: 
           labels: 
             kusionstack.io/module-name: kawesome
           annotations: 
-            kusionstack.io/module-version: 0.2.0
+            kusionstack.io/module-version: 0.3.0

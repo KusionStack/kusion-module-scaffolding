@@ -258,7 +258,7 @@ func TestKawesomeModule_Generate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o := &Kawesome{}
+			o := &KawesomeModGenerator{}
 			got, err := o.Generate(context.Background(), tt.args.request)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Generate() error = %v, wantErr %v", err, tt.wantErr)
